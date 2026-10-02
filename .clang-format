@@ -1,0 +1,4 @@
+Language: C
+BasedOnStyle: LLVM
+BreakBeforeBraces: Allman
+IndentWidth: 4
