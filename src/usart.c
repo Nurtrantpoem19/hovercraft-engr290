@@ -16,9 +16,16 @@ void usart_init(uint16_t ubrr_val) {
     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
 }
 
-void usart_transmit(uint16_t data) {
-
+void usart_transmit(uint8_t data) {
+    while (!(UCSR0A & (1 << UDRE0))); // Wait for empty buffer
+    UDR0 = data;
 }
+
+uint8_t usart_receive(void) {
+    while (!(UCSR0A & (1 << RXC0))); // Wait for empty buffer
+    return UDR0;
+}
+
 
 // Transmit and Receive Data Buffer Registers share same I/O address UDR0
 // UDR0: Data Buffer

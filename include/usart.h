@@ -6,6 +6,7 @@
 #define UBRR_VAL
 
 void usart_init(uint16_t ubrr_val);
-void usart_transmit(uint16_t data);
+void usart_transmit(uint8_t data);
+uint8_t usart_receive(void);
 
 #endif
