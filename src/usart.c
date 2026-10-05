@@ -1,12 +1,32 @@
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <stdint.h>
 #include "usart.h"
 
 #define FOSC 16000000UL // Clock Speed
 #define BAUD 9600UL // BAUD Rate
 #define UBRR_VAL (FOSC / (16UL * (BAUD)) - 1UL) // Normal asynchronous clock operation
+#define BUFFERSIZE 32U // 32 bytes for buffer
+
+// Transceiver Buffer
+volatile uint8_t txBuffer[BUFFERSIZE];
+volatile uint8_t txHead = 0; // write
+volatile uint8_t txTail = 0; // read
+
+ISR(USART_UDRE_vect) {
+    if (txTail != txHead) { // if not empty
+        UDR0 = txBuffer[txTail];
+        txTail = (txTail + 1) % BUFFERSIZE;
+    }
+    else {
+       UCSR0B &= ~(1 << UDRIE0); 
+    }
+}
 
 void usart_init(uint16_t ubrr_val) {
+    SREG |= (1 << SREG_I); // Allows global interrupts --> Move this to the bottom of system_init later
+
+
     // Split 12 bits of ubrr into high and low
     UBRR0H = (uint8_t) (ubrr_val >> 8);
     UBRR0L = (uint8_t) (ubrr_val);
@@ -17,27 +37,12 @@ void usart_init(uint16_t ubrr_val) {
 }
 
 void usart_transmit(uint8_t data) {
-    while (!(UCSR0A & (1 << UDRE0))); // Wait for empty buffer
-    UDR0 = data;
+    if (((txHead + 1) % BUFFERSIZE) != txTail) {
+        txBuffer[txHead] = data;
+        txHead = ((txHead + 1) % BUFFERSIZE);
+        UCSR0B |= (1 << UDRIE0);
+    }
+    else { // full: discard data
+        return;
+    }
 }
-
-uint8_t usart_receive(void) {
-    while (!(UCSR0A & (1 << RXC0))); // Wait for empty buffer
-    return UDR0;
-}
-
-
-// Transmit and Receive Data Buffer Registers share same I/O address UDR0
-// UDR0: Data Buffer
-/*  ============== UCSR0A =================
-    RXC0: USART Receive Complete
-    TXC0: USART Transmit Complete
-    UDRE0: USART Data Register Empty, ready to receive, set after a reset
-    FE0: Frame Error
-    DOR0: Data OverRun
-    UPE0: USART Parity Error
-
-    ============== UCSR0B =================
-    RXEN0: Receiver Enable on the RxDn pin
-    TXEN0: Transmitter Enable on the TxD0 pin
-*/
