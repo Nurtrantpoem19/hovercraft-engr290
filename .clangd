@@ -2,9 +2,10 @@ CompileFlags:
   Add:
     # Specify target MCU for <avr/io.h>
 
-    - "-mmcu=atmega2560"
+    - "-mmcu=atmega328p"
     # Target 8-bit AVR architecture
     - "--target=avr"
     # Provide system toolchain path if clangd can't locate avr-gcc headers
     - "-I/usr/avr/include"
     - "-I/usr/lib/avr/include"
+    - "-I./include"
