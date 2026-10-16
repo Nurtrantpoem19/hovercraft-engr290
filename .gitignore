@@ -1,7 +1,3 @@
 session
-build/CMakeFiles
-build/cmake_install.cmake
-build/hovercraft_firmware.elf
-build/hovercraft_firmware.hex
-build/Makefile
-build/CMakeCache.txt
+build/
+.vscode/
