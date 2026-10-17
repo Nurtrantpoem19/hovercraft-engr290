@@ -4,6 +4,7 @@
 #include "../include/uart.h"
 #include "../include/adc.h"
 #include "../include/sensors.h"
+#include "../include/TWI_290.h"
 
 int main(void) {
     // Initialize hardware peripherals
