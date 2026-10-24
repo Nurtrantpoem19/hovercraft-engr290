@@ -1,5 +1,5 @@
 #include "../include/imu.h"
-#include "../include/twi_290.h"
+#include "../include/TWI_290.h"
 #include <avr/io.h>
 
 extern volatile uint8_t TWI_status, TWI_byte;
@@ -34,5 +34,24 @@ uint8_t imu_init() {
     if (status) return status;
     status = accel_set_FS(0); // Set full scale range to +/-2g
     if (status) return status;
+    return 0;
+}
+
+// gets the raw data for gyro and accel
+uint8_t imu_read(accel_raw_t *accel, gyro_raw_t *gyro) {
+    // Read data
+    uint8_t data[14];
+    TWI_status = Read_Reg_N(MPU_ADDR, ACCEL_XOUT_H, 14, data);
+    if (TWI_status) return 1; // TWI error
+
+    // Accel bytes 0-5
+    accel->x = (data[0] << 8) | data[1];
+    accel->y = (data[2] << 8) | data[3];
+    accel->z = (data[4] << 8) | data[5];
+    // Temp bytes 6-7 not needed
+    // Gyroscope (bytes 8 - 13)
+    gyro->x  = (data[8]  << 8) | data[9];
+    gyro->y  = (data[10] << 8) | data[11];
+    gyro->z  = (data[12] << 8) | data[13];
     return 0;
 }
