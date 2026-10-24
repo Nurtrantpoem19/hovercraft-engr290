@@ -3,12 +3,29 @@
 #include <avr/io.h>
 
 extern volatile uint8_t TWI_status, TWI_byte;
+uint16_t accel_sens; // LSB/g
+float gyro_sens = 131.0f; // LSB/deg/s
 
 // 0 = +/-250, 1 = +/-500, 2 = +/-1000, 3 = +/-2000
 uint8_t gyro_set_FS(uint8_t fs_sel) {
     if (fs_sel > 3) return 2; // invalid input
     TWI_status = Write_Reg(MPU_ADDR, GYRO_CONFIG, fs_sel << FS_SEL);
     if (TWI_status) return 1; // TWI error
+    switch (fs_sel) {
+        case 0:
+            gyro_sens = 131.f;
+            break;
+        case 1:
+            gyro_sens = 65.5f;
+            break;
+        case 2:
+            gyro_sens = 32.8f;
+            break;
+        case 3:
+            gyro_sens = 16.4f;
+            break;
+        
+    }
     return 0;
 }
 
@@ -17,6 +34,18 @@ uint8_t accel_set_FS(uint8_t afs_sel) {
     if (afs_sel > 3) return 2; // invalid input
     TWI_status = Write_Reg(MPU_ADDR, ACCEL_CONFIG, afs_sel << AFS_SEL);
     if (TWI_status) return 1; // TWI error
+    switch (afs_sel) {
+        case 0:
+            accel_sens = 16384;
+            break;
+        case 1:
+            accel_sens = 8192;
+            break;
+        case 2:
+            accel_sens = 4096;
+        case 3:
+            accel_sens = 2048;
+    }
     return 0;
 }
 
@@ -54,4 +83,18 @@ uint8_t imu_read(accel_raw_t *accel, gyro_raw_t *gyro) {
     gyro->y  = (data[10] << 8) | data[11];
     gyro->z  = (data[12] << 8) | data[13];
     return 0;
+}
+
+// accel = accel_raw / accel_sens
+void convert_accel_raw(accel_raw_t *accel_raw, accel_t *accel) {
+    accel->x = (float) (accel_raw->x) / accel_sens;
+    accel->y = (float) (accel_raw->y) / accel_sens;
+    accel->z = (float) (accel_raw->z) / accel_sens;
+}
+
+// gyro = gyro_raw / gyro_sens
+void convert_gyro_raw(gyro_raw_t *gyro_raw, gyro_t *gyro) {
+    gyro->x = (float) (gyro_raw->x) / gyro_sens;
+    gyro->y = (float) (gyro_raw->y) / gyro_sens;
+    gyro->z = (float) (gyro_raw->z) / gyro_sens;
 }
