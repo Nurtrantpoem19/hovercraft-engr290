@@ -1,6 +1,6 @@
 #include <util/twi.h>
 
-extern volatile struct {
+volatile struct {
 	uint8_t TX_new_data:1;
 	uint8_t TX_finished:1;
 	uint8_t TX_buffer1_empty:1;
@@ -9,7 +9,7 @@ extern volatile struct {
 	uint8_t TWI_ACK:1;
 } flags;
 
-extern volatile uint8_t TWI_status, TWI_byte;
+volatile uint8_t TWI_status, TWI_byte;
 
 //=============================== TWI functions ======================
 
@@ -28,7 +28,7 @@ uint8_t TWI_start(uint8_t twi_addr, uint8_t read_write) {
 	return 0;
 }
 
-void inline TWI_stop(void) {
+void TWI_stop(void) {
 	TWCR=((1<<TWINT)|(1<<TWEN)|(1<<TWSTO)); // send stop condition
 	while(TWCR&(1<<TWSTO)); // wait until stop condition is executed and bus released
 }
@@ -80,7 +80,7 @@ uint8_t Read_Reg(uint8_t TWI_addr, uint8_t reg_addr){
 }
 
 
-uint8_t Read_Reg_N(uint8_t TWI_addr, uint8_t reg_addr, uint8_t bytes, int16_t* data){ 
+uint8_t Read_Reg_N(uint8_t TWI_addr, uint8_t reg_addr, uint8_t bytes, uint8_t* data){ 
 	
 	uint8_t *p_data=(uint8_t*)data;
 
