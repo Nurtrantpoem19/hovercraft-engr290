@@ -47,6 +47,16 @@ typedef struct { // Raw gyroscope values
     int16_t y;
     int16_t z;
 } gyro_raw_t;
+typedef struct { // converted accel values (g)
+    int16_t x;
+    int16_t y;
+    int16_t z;
+} accel_t;
+typedef struct { // converted gyro values (deg/s)
+    int16_t x;
+    int16_t y;
+    int16_t z;
+} gyro_t;
 
 //---------------------------------------------------------------
 // Prototypes
@@ -54,5 +64,7 @@ uint8_t imu_init(void);
 uint8_t imu_read(accel_raw_t *accel, gyro_raw_t *gyro);
 uint8_t gyro_set_FS(uint8_t fs_sel);
 uint8_t accel_set_FS(uint8_t afs_sel);
+void conver_accel_raw(accel_raw_t *accel);
+void convert_gyro_raw(gyro_raw_t *gyro);
 
 #endif
