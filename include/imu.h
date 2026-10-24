@@ -51,7 +51,7 @@ typedef struct { // Raw gyroscope values
 //---------------------------------------------------------------
 // Prototypes
 uint8_t imu_init(void);
-void imu_read(accel_raw_t *accel, gyro_raw_t *gyro);
+uint8_t imu_read(accel_raw_t *accel, gyro_raw_t *gyro);
 uint8_t gyro_set_FS(uint8_t fs_sel);
 uint8_t accel_set_FS(uint8_t afs_sel);
 
