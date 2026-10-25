@@ -89,7 +89,7 @@ void imu_calibrate(void) {
     // divide by 900 to get average offset value
     accel_offset.x = (int16_t) (sum_ax / 900);
     accel_offset.y = (int16_t) (sum_ay / 900);
-    accel_offset.z = (int16_t) (sum_az / 900);
+    accel_offset.z = (int16_t) ((sum_az / 900) - accel_sens);
     gyro_offset.x = (int16_t) (sum_gx / 900);
     gyro_offset.y = (int16_t) (sum_gy / 900);
     gyro_offset.z = (int16_t) (sum_gz / 900);
