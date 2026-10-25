@@ -111,6 +111,10 @@ uint8_t imu_init() {
     if (status) return status;
 
     imu_calibrate();
+    // Set initial rotation to 0
+    rotation.yaw   = 0.0f;
+    rotation.pitch = 0.0f;
+    rotation.roll  = 0.0f;
 
     return 0;
 }
@@ -148,7 +152,17 @@ void convert_gyro_raw() {
     gyro.z = (float) (gyro_raw.z - gyro_offset.z) / gyro_sens;
 }
 
-// gyro_yaw, gyro_pitch, gyro_roll
+//---------------------------------------------------------------
+// Rotation calculations
 void rotation_update() {
+    float gyro_yaw = gyro.z * DT;
+    float gyro_pitch = gyro.y * DT;
+    float gyro_roll = gyro.x * DT;
+    float accel_pitch = atan2f(-accel.x, accel.z) * RAD_TO_DEG;
+    float accel_roll = atan2f(accel.y, accel.z) * RAD_TO_DEG;
 
+    // Complementary filter
+    rotation.yaw += gyro_yaw;
+    rotation.pitch = 0.98f * (rotation.pitch + gyro_pitch) + 0.02f * accel_pitch;
+    rotation.roll = 0.98f * (rotation.roll + gyro_roll) + 0.02f * accel_roll;
 }

@@ -2,6 +2,7 @@
 #define IMU_H
 
 #include <stdint.h>
+#include <math.h>
 // MPU6050 Default Address
 #define MPU_ADDR 0x68
 //---------------------------------------------------------------
@@ -34,6 +35,12 @@
 // ===PWR_MGMT_1===
 #define CLKSEL 0 // 0 = Internal 8MHz oscillator, 1 = PLL with X axis gyroscope reference
 #define SLEEP 6 // 0 = awake, 1 = sleep
+
+//---------------------------------------------------------------
+// Constants
+#define DT 0.02f // 20ms step
+#define PI 3.14159265f
+#define RAD_TO_DEG (180.f / PI)
 
 //---------------------------------------------------------------
 // Structs
