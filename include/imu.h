@@ -59,6 +59,14 @@ typedef struct { // converted gyro values (deg/s)
 } gyro_t;
 
 //---------------------------------------------------------------
+// Calibration
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t z;
+} offset_t;
+
+//---------------------------------------------------------------
 // Prototypes
 uint8_t imu_init(void);
 uint8_t imu_read(accel_raw_t *accel, gyro_raw_t *gyro);
@@ -66,5 +74,6 @@ uint8_t gyro_set_FS(uint8_t fs_sel);
 uint8_t accel_set_FS(uint8_t afs_sel);
 void convert_accel_raw(accel_raw_t *accel_raw, accel_t *accel);
 void convert_gyro_raw(gyro_raw_t *gyro_raw, gyro_t *gyro);
+void gyro_calibrate(gyro_raw_t *offset);
 
 #endif

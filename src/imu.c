@@ -1,10 +1,12 @@
 #include "../include/imu.h"
 #include "../include/TWI_290.h"
 #include <avr/io.h>
+#include <util/delay.h>
 
 extern volatile uint8_t TWI_status, TWI_byte;
 uint16_t accel_sens; // LSB/g
 float gyro_sens = 131.0f; // LSB/deg/s
+offset_t offset;
 
 // 0 = +/-250, 1 = +/-500, 2 = +/-1000, 3 = +/-2000
 uint8_t gyro_set_FS(uint8_t fs_sel) {
@@ -49,6 +51,25 @@ uint8_t accel_set_FS(uint8_t afs_sel) {
     return 0;
 }
 
+void gyro_calibrate(gyro_raw_t *offset) {
+    int32_t sum_x = 0;
+    int32_t sum_y = 0;
+    int32_t sum_z = 0;
+    uint8_t data[6];
+    
+    for (int i = 0; i < 100; i++) { // add up 100 samples
+        Read_Reg_N(MPU_ADDR, GYRO_XOUT_H, 6, data); // read the 6 gyro measurement registers
+        sum_x += (int16_t) ((data[0] << 8) | data[1]);
+        sum_y += (int16_t) ((data[2] << 8) | data[3]);
+        sum_z += (int16_t) ((data[4] << 8) | data[5]);
+        _delay_ms(1);
+    }
+    // divide by 100 to get average offset value
+    offset->x = (int16_t) (sum_x / 100);
+    offset->y = (int16_t) (sum_y / 100);
+    offset->z = (int16_t) (sum_z / 100);
+}
+
 uint8_t imu_init() {
     // Ensure WHO_AM_I is correct
     TWI_status = Read_Reg(MPU_ADDR, WHO_AM_I);
@@ -63,6 +84,9 @@ uint8_t imu_init() {
     if (status) return status;
     status = accel_set_FS(0); // Set full scale range to +/-2g
     if (status) return status;
+
+    gyro_calibrate(&offset);
+
     return 0;
 }
 
@@ -94,7 +118,7 @@ void convert_accel_raw(accel_raw_t *accel_raw, accel_t *accel) {
 
 // gyro = gyro_raw / gyro_sens
 void convert_gyro_raw(gyro_raw_t *gyro_raw, gyro_t *gyro) {
-    gyro->x = (float) (gyro_raw->x) / gyro_sens;
-    gyro->y = (float) (gyro_raw->y) / gyro_sens;
-    gyro->z = (float) (gyro_raw->z) / gyro_sens;
+    gyro->x = (float) (gyro_raw->x - offset.x) / gyro_sens;
+    gyro->y = (float) (gyro_raw->y - offset.y) / gyro_sens;
+    gyro->z = (float) (gyro_raw->z - offset.z) / gyro_sens;
 }
