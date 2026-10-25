@@ -6,7 +6,19 @@
 extern volatile uint8_t TWI_status, TWI_byte;
 uint16_t accel_sens; // LSB/g
 float gyro_sens = 131.0f; // LSB/deg/s
-offset_t offset;
+//---------------------------------------------------------------
+// Global variables
+vector3_t accel;
+vector3_t gyro;
+vector3_t position;
+rotation_t rotation; // yaw pitch roll
+//---------------------------------------------------------------
+// Static variables
+static vector3_int16_t accel_raw;
+static vector3_int16_t gyro_raw;
+
+static vector3_int16_t accel_offset;
+static vector3_int16_t gyro_offset;
 
 // 0 = +/-250, 1 = +/-500, 2 = +/-1000, 3 = +/-2000
 uint8_t gyro_set_FS(uint8_t fs_sel) {
@@ -45,29 +57,42 @@ uint8_t accel_set_FS(uint8_t afs_sel) {
             break;
         case 2:
             accel_sens = 4096;
+            break;
         case 3:
             accel_sens = 2048;
+            break;
     }
     return 0;
 }
 
-void gyro_calibrate(gyro_raw_t *offset) {
-    int32_t sum_x = 0;
-    int32_t sum_y = 0;
-    int32_t sum_z = 0;
-    uint8_t data[6];
+void imu_calibrate(void) {
+    int32_t sum_ax = 0;
+    int32_t sum_ay = 0;
+    int32_t sum_az = 0;
+    int32_t sum_gx = 0;
+    int32_t sum_gy = 0;
+    int32_t sum_gz = 0;
     
-    for (int i = 0; i < 100; i++) { // add up 100 samples
-        Read_Reg_N(MPU_ADDR, GYRO_XOUT_H, 6, data); // read the 6 gyro measurement registers
-        sum_x += (int16_t) ((data[0] << 8) | data[1]);
-        sum_y += (int16_t) ((data[2] << 8) | data[3]);
-        sum_z += (int16_t) ((data[4] << 8) | data[5]);
+    for (int i = 0; i < 1000; i++) {
+        imu_read();
+        if (i >= 100) { // discard the first 100 readings
+            sum_ax += accel_raw.x;
+            sum_ay += accel_raw.y;
+            sum_az += accel_raw.z;
+            sum_gx += gyro_raw.x;
+            sum_gy += gyro_raw.y;
+            sum_gz += gyro_raw.z;
+        }
+        
         _delay_ms(1);
     }
-    // divide by 100 to get average offset value
-    offset->x = (int16_t) (sum_x / 100);
-    offset->y = (int16_t) (sum_y / 100);
-    offset->z = (int16_t) (sum_z / 100);
+    // divide by 900 to get average offset value
+    accel_offset.x = (int16_t) (sum_ax / 900);
+    accel_offset.y = (int16_t) (sum_ay / 900);
+    accel_offset.z = (int16_t) (sum_az / 900);
+    gyro_offset.x = (int16_t) (sum_gx / 900);
+    gyro_offset.y = (int16_t) (sum_gy / 900);
+    gyro_offset.z = (int16_t) (sum_gz / 900);
 }
 
 uint8_t imu_init() {
@@ -85,40 +110,45 @@ uint8_t imu_init() {
     status = accel_set_FS(0); // Set full scale range to +/-2g
     if (status) return status;
 
-    gyro_calibrate(&offset);
+    imu_calibrate();
 
     return 0;
 }
 
 // gets the raw data for gyro and accel
-uint8_t imu_read(accel_raw_t *accel, gyro_raw_t *gyro) {
+uint8_t imu_read() {
     // Read data
     uint8_t data[14];
     TWI_status = Read_Reg_N(MPU_ADDR, ACCEL_XOUT_H, 14, data);
     if (TWI_status) return 1; // TWI error
 
     // Accel bytes 0-5
-    accel->x = (data[0] << 8) | data[1];
-    accel->y = (data[2] << 8) | data[3];
-    accel->z = (data[4] << 8) | data[5];
+    accel_raw.x = (int16_t) ((data[0] << 8) | data[1]);
+    accel_raw.y = (int16_t) ((data[2] << 8) | data[3]);
+    accel_raw.z = (int16_t) ((data[4] << 8) | data[5]);
     // Temp bytes 6-7 not needed
     // Gyroscope (bytes 8 - 13)
-    gyro->x  = (data[8]  << 8) | data[9];
-    gyro->y  = (data[10] << 8) | data[11];
-    gyro->z  = (data[12] << 8) | data[13];
+    gyro_raw.x  = (int16_t)  ((data[8]  << 8) | data[9]);
+    gyro_raw.y  = (int16_t)  ((data[10] << 8) | data[11]);
+    gyro_raw.z  = (int16_t)  ((data[12] << 8) | data[13]);
     return 0;
 }
 
 // accel = accel_raw / accel_sens
-void convert_accel_raw(accel_raw_t *accel_raw, accel_t *accel) {
-    accel->x = (float) (accel_raw->x) / accel_sens;
-    accel->y = (float) (accel_raw->y) / accel_sens;
-    accel->z = (float) (accel_raw->z) / accel_sens;
+void convert_accel_raw() {
+    accel.x = (float) (accel_raw.x - accel_offset.x) / accel_sens;
+    accel.y = (float) (accel_raw.y - accel_offset.y) / accel_sens;
+    accel.z = (float) (accel_raw.z - accel_offset.z) / accel_sens;
 }
 
 // gyro = gyro_raw / gyro_sens
-void convert_gyro_raw(gyro_raw_t *gyro_raw, gyro_t *gyro) {
-    gyro->x = (float) (gyro_raw->x - offset.x) / gyro_sens;
-    gyro->y = (float) (gyro_raw->y - offset.y) / gyro_sens;
-    gyro->z = (float) (gyro_raw->z - offset.z) / gyro_sens;
+void convert_gyro_raw() {
+    gyro.x = (float) (gyro_raw.x - gyro_offset.x) / gyro_sens;
+    gyro.y = (float) (gyro_raw.y - gyro_offset.y) / gyro_sens;
+    gyro.z = (float) (gyro_raw.z - gyro_offset.z) / gyro_sens;
+}
+
+// gyro_yaw, gyro_pitch, gyro_roll
+void rotation_update() {
+
 }

@@ -36,44 +36,36 @@
 #define SLEEP 6 // 0 = awake, 1 = sleep
 
 //---------------------------------------------------------------
-// Data storage from the IMU
-typedef struct { // Raw acceleration values
+// Structs
+typedef struct { // x y z
     int16_t x;
     int16_t y;
     int16_t z;
-} accel_raw_t;
-typedef struct { // Raw gyroscope values
-    int16_t x;
-    int16_t y;
-    int16_t z;
-} gyro_raw_t;
-typedef struct { // converted accel values (g)
-    int16_t x;
-    int16_t y;
-    int16_t z;
-} accel_t;
-typedef struct { // converted gyro values (deg/s)
-    int16_t x;
-    int16_t y;
-    int16_t z;
-} gyro_t;
-
+} vector3_int16_t;
+typedef struct { // x y z (float)
+    float x;
+    float y;
+    float z;
+} vector3_t;
+typedef struct { // yaw pitch roll
+    float yaw;
+    float pitch;
+    float roll;
+} rotation_t;
 //---------------------------------------------------------------
-// Calibration
-typedef struct {
-    int16_t x;
-    int16_t y;
-    int16_t z;
-} offset_t;
-
+// Global variables
+extern vector3_t accel;
+extern vector3_t gyro;
+extern vector3_t position;
+extern rotation_t rotation;
 //---------------------------------------------------------------
 // Prototypes
 uint8_t imu_init(void);
-uint8_t imu_read(accel_raw_t *accel, gyro_raw_t *gyro);
+uint8_t imu_read(void);
 uint8_t gyro_set_FS(uint8_t fs_sel);
 uint8_t accel_set_FS(uint8_t afs_sel);
-void convert_accel_raw(accel_raw_t *accel_raw, accel_t *accel);
-void convert_gyro_raw(gyro_raw_t *gyro_raw, gyro_t *gyro);
-void gyro_calibrate(gyro_raw_t *offset);
+void convert_accel_raw(void);
+void convert_gyro_raw(void);
+void imu_calibrate(void);
 
 #endif
