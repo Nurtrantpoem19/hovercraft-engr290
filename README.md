@@ -42,6 +42,10 @@ cd build
 ./compilation.sh <project-name>.elf
 ```
 
+## 4. Reading and picocom
+use picocom -b 9600 with your respective port
+you obviously need to install picocom first.
+
 The script converts the ELF file to a HEX file and flashes it to the board connected to the configured serial port.
 
 Replace `<project-name>.elf` with the actual ELF filename. Make sure the board is connected and the serial port is correct before running the script.
