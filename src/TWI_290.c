@@ -1,4 +1,5 @@
 #include <util/twi.h>
+#include <avr/io.h>
 
 volatile struct {
 	uint8_t TX_new_data:1;
@@ -12,6 +13,12 @@ volatile struct {
 volatile uint8_t TWI_status, TWI_byte;
 
 //=============================== TWI functions ======================
+
+void TWI_init(void) {
+	TWSR = 0; // Prescaler = 1
+	TWBR = (uint8_t)((F_CPU / 100000UL - 16) / 2); // 100 kHz
+	TWCR = (1 << TWEN);
+}
 
 uint8_t TWI_start(uint8_t twi_addr, uint8_t read_write) {
 
