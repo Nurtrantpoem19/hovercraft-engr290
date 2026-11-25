@@ -3,7 +3,8 @@
 
 
 
-#define SERVO_MIN_PULSE_US  800U
+#define SERVO_MIN_PULSE_US  900U
+#define CENTER 1500
 #define SERVO_MAX_PULSE_US 2200U
 
 void servo_init(void) {
@@ -26,12 +27,20 @@ uint8_t servo_setAngle(int16_t angle) {
         return 1;
     }
 
-    uint32_t range = SERVO_MAX_PULSE_US - SERVO_MIN_PULSE_US;
-    uint16_t pulse_us = (uint16_t)(
-        SERVO_MIN_PULSE_US + ((uint32_t)angle * range) / 180U
-    );
+    uint16_t pulse_range = SERVO_MAX_PULSE_US - SERVO_MIN_PULSE_US;
+    uint16_t whole_step = pulse_range / 180U;
+    uint16_t remainder_step = pulse_range % 180U;
+    uint16_t pulse_offset = (uint16_t)(angle * whole_step)
+        + (uint16_t)(angle * remainder_step) / 180U;
+    uint16_t pulse_us = SERVO_MIN_PULSE_US + pulse_offset;
 
     servo_sendPulse(pulse_us);
     return 0;
+}
+
+void servo_center()
+{
+    servo_sendPulse(CENTER);
+
 }
 
