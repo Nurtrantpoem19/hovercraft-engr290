@@ -27,12 +27,20 @@ add_executable(test_thrust.elf
     tests/test_thrust.c
     src/fan_thrust.c
 )
+add_executable(test_lift.elf
+    tests/test_lift.c
+    src/fan_lift.c
+)
 
 target_include_directories(test_pwm.elf PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 target_include_directories(test_thrust.elf PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
+target_include_directories(test_lift.elf PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
@@ -53,6 +61,15 @@ target_compile_options(${PROJECT_NAME}.elf PRIVATE
 )
 
 target_compile_options(test_thrust.elf PRIVATE
+    -mmcu=${MCU}
+    -DF_CPU=${F_CPU}
+    -Os
+    -Wall
+    -Wextra
+    -ffunction-sections
+    -fdata-sections
+)
+target_compile_options(test_lift.elf PRIVATE
     -mmcu=${MCU}
     -DF_CPU=${F_CPU}
     -Os
