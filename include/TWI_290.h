@@ -2,6 +2,8 @@
 
 extern volatile uint8_t TWI_status, TWI_byte;
 
+void TWI_init(void);
+
 uint8_t TWI_start(uint8_t twi_addr, uint8_t read_write);
 
 void TWI_stop(void);
