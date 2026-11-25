@@ -12,12 +12,14 @@ file(GLOB SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
 )
 
+
 add_executable(${PROJECT_NAME}.elf
     ${SOURCES}
 )
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
 target_compile_options(${PROJECT_NAME}.elf PRIVATE
