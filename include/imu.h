@@ -38,7 +38,6 @@
 
 //---------------------------------------------------------------
 // Constants
-#define DT 0.02f // 20ms step
 #define PI 3.14159265f
 #define RAD_TO_DEG (180.f / PI)
 
@@ -74,5 +73,6 @@ uint8_t accel_set_FS(uint8_t afs_sel);
 void convert_accel_raw(void);
 void convert_gyro_raw(void);
 void imu_calibrate(void);
+void rotation_update(float elapsed_seconds);
 
 #endif

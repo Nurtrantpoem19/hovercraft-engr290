@@ -154,10 +154,10 @@ void convert_gyro_raw() {
 
 //---------------------------------------------------------------
 // Rotation calculations
-void rotation_update() {
-    float gyro_yaw = gyro.z * DT;
-    float gyro_pitch = gyro.y * DT;
-    float gyro_roll = gyro.x * DT;
+void rotation_update(float elapsed_seconds) {
+    float gyro_yaw = gyro.z * elapsed_seconds;
+    float gyro_pitch = gyro.y * elapsed_seconds;
+    float gyro_roll = gyro.x * elapsed_seconds;
     float accel_pitch = atan2f(-accel.x, accel.z) * RAD_TO_DEG;
     float accel_roll = atan2f(accel.y, accel.z) * RAD_TO_DEG;
 
