@@ -9,6 +9,8 @@
 
 uint16_t sensorsIR_raw_to_mv(uint16_t raw_adc);
 uint16_t sensorsIR_read();
+uint16_t sensorsIR_average();
 
 void sensorsUS_init();
 uint16_t sensorsUS_read();
+uint16_t sensorsUS2_read(void);

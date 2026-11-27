@@ -46,15 +46,13 @@ void uart_transmit_uint16(uint16_t num) {
 
 void transmit_IR()
 {
-        uint16_t raw_val = sensorsIR_read();
-        uint16_t mv_val  = sensorsIR_raw_to_mv(raw_val);
+        uint16_t cm_val = sensorsIR_average();
 
-        uart_transmit_string("IR Raw: ");
-        uart_transmit_uint16(raw_val);
-        uart_transmit_string(" | Voltage: ");
-        uart_transmit_uint16(mv_val);
-        uart_transmit_string(" mV\r\n");
 
+        uart_transmit_string("IR Distance: ");
+        uart_transmit_uint16((uint16_t)cm_val);
+        uart_transmit_string(" cm\r\n");
+        
 
 }
 
