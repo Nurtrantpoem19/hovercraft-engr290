@@ -2,10 +2,10 @@
 
 #include <util/delay.h>
 #include "servo.h"
+#include "servo2.h"
 
 int main(void) {
 	servo_init();
-
 	while (1) {
 
 
@@ -18,10 +18,13 @@ int main(void) {
 		servo_center();// Minimum test position
 		_delay_ms(6000);
 
-		servo_setAngle(160);
+		servo_setAngle(180);
 		_delay_ms(2000);
-		servo_setAngle(10);
+		servo_setAngle(00);
 		_delay_ms(2000);
+
+
+	
 		
 		
 
