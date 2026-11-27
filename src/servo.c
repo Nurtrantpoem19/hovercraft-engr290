@@ -3,9 +3,9 @@
 
 
 
-#define SERVO_MIN_PULSE_US  900U
+#define SERVO_MIN_PULSE_US  700U
 #define CENTER 1500
-#define SERVO_MAX_PULSE_US 2200U
+#define SERVO_MAX_PULSE_US 2420U
 
 void servo_init(void) {
 	DDRB |= (1 << PB1);
