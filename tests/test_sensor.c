@@ -17,6 +17,9 @@ int main(void) {
     uint16_t ir_counter = 0;
 
     while (1) {
+        uart_transmit_string("IR Raw: ");
+        uart_transmit_uint16(sensorsIR_read());
+        uart_transmit_string(" | ");
         transmit_IR();
         ir_counter++;
 
